@@ -44,8 +44,8 @@ void setup()
 void loop()
 {
     float temperatura = lm92.readTemperature();
-    Serial.println(temperatura);
     String s_temp = String(temperatura,1);
+    Serial.println(temperatura);
     sendToEmonCMS("0", s_temp);
 
     //ThingSpeak.writeField(myChannelNumber, 1, temperatura, myWriteAPIKey);
