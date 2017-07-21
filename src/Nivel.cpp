@@ -12,6 +12,11 @@
 // const char* password = "papaya2014";
 // int status = WL_IDLE_STATUS;
 
+//sensor temperatura
+#define SDA D1
+#define SCL D2
+
+//sensor distancia
 #define vccPin D5 // Pino q alimenta o sensor
 #define trigPin D6 // Trigger Pin
 #define echoPin D7 // Echo Pin
@@ -37,11 +42,10 @@ void setup()
 {
       // We start by connecting to a WiFi network
     Serial.begin(9600);
-    //Wire.begin([SDA], [SCL]).    //Wire.begin([SDA], [SCL]).
     WiFiManager wifiManager;
     wifiManager.autoConnect("ESP8266");
     Serial.println("connected...yeey :)");
-    Wire.begin();
+    Wire.begin(SDA, SCL);
 
     lm92.enableFaultQueue(true); //optional, make readings more tolerent to inteference
     lm92.ResultInCelsius = true;  //change to Celsius mode
@@ -81,8 +85,8 @@ void loop()
     sendToEmonCMS("0", s_temp, s_distance);
 
     //ThingSpeak.writeField(myChannelNumber, 1, temperatura, myWriteAPIKey);
-    //delay(10000);
-    ESP.deepSleep(sleep_time_s);
+    delay(3000);
+    //ESP.deepSleep(sleep_time_s);
 }
 
 void sendToEmonCMS(String nodeId, String data1, String data2) {
