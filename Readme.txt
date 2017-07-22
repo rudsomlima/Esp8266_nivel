@@ -5,4 +5,5 @@
   2. Medir tensão da bateria
   3. Medir tensão da placa solar
   4. Medir corrente da placa solar
+  5. Definir o ip
   
