@@ -7,6 +7,7 @@
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>        //https://github.com/tzapu/WiFiManager
+#include <Ticker.h>
 
 // const char* ssid     = "papaya";
 // const char* password = "papaya2014";
@@ -31,6 +32,15 @@ const char* emoncmsKey = "673d68c21abb07c581469836abc8aa97";
 const char* host = "emoncms.org";
 
 
+//for LED status
+Ticker ticker;
+void tick()
+{
+  //toggle state
+  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
+  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
+}
+
 LM92 lm92(0,1);  //address 1, 0
 
 //unsigned long myChannelNumber = 297575;
@@ -38,13 +48,24 @@ LM92 lm92(0,1);  //address 1, 0
 
 uint32_t sleep_time_s = 30 * 60 * 1000000;  //30x60x1s = 30 min
 
+//Entra nesta função quando o Wifimamager está em modo de configuração
+void configModeCallback (WiFiManager *myWiFiManager) {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  Serial.println(myWiFiManager->getConfigPortalSSID());
+  //entered config mode, make led toggle faster
+  ticker.attach(0.2, tick);
+}
+
 void setup()
 {
       // We start by connecting to a WiFi network
     Serial.begin(9600);
     WiFiManager wifiManager;
-    wifiManager.autoConnect("ESP8266");
+    wifiManager.autoConnect("ESP8266", "smolder"); //nome e senha para acessar o portal
     Serial.println("connected...yeey :)");
+    ticker.detach();
     Wire.begin(SDA, SCL);
 
     lm92.enableFaultQueue(true); //optional, make readings more tolerent to inteference
