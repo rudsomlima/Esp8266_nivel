@@ -42,10 +42,10 @@ void tick()
 
 LM92 lm92(0,1);  //address 1, 0
 
-//unsigned long myChannelNumber = 297575;
-//const char * myWriteAPIKey = "95P28PYJT1I8PKUY";
+unsigned long myChannelNumber = 297575;
+const char * myWriteAPIKey = "95P28PYJT1I8PKUY";
 
-uint32_t sleep_time_s = 30 * 60 * 1000000;  //30x60x1s = 30 min
+uint32_t sleep_time_s = 5 * 60 * 1000000;  //30x60x1s = 30 min
 
 //Entra nesta função quando o Wifimamager está em modo de configuração
 void configModeCallback (WiFiManager *myWiFiManager) {
@@ -81,7 +81,7 @@ void loop()
     //temperatura
     float temperatura = lm92.readTemperature();
     String s_temp = String(temperatura,1);
-    Serial.println(temperatura);
+    Serial.println(s_temp);
 
     double_t echoTime = sonar.ping_median(5);  //media de medicoes
     distance = sonar.convert_cm(echoTime);
@@ -89,11 +89,13 @@ void loop()
     Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
     Serial.println("cm");
 
-    sendToEmonCMS("0", s_temp, distance);
+    //sendToEmonCMS("0", s_temp, distance);
 
-    ThingSpeak.writeField(myChannelNumber, 1, temperatura, myWriteAPIKey);
-    delay(3000);
-    ESP.deepSleep(sleep_time_s);
+    ThingSpeak.setField(1, s_temp);
+    ThingSpeak.setField(2, distance);
+    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+    // delay(3000);
+    ESP.deepSleep(sleep_time_s);    //ligar os pinos reset no gpio16
 }
 
   // void sendToEmonCMS(String nodeId, String data1, String data2) {
@@ -126,4 +128,3 @@ void loop()
   //   String line = client.readStringUntil('\r');
   //   //Serial.print(line);
   // }
-}
