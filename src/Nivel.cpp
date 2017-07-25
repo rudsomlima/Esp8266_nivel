@@ -72,6 +72,7 @@ void setup()
 
     pinMode(vccPin, OUTPUT);
     digitalWrite(vccPin, HIGH);    //liga a alimentação
+    delay(300);  //para estabilizar o ultrassom
 
     ThingSpeak.begin(client);
 }
@@ -94,7 +95,7 @@ void loop()
     ThingSpeak.setField(1, s_temp);
     ThingSpeak.setField(2, distance);
     ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-    // delay(3000);
+    //delay(30000);
     ESP.deepSleep(sleep_time_s);    //ligar os pinos reset no gpio16
 }
 
