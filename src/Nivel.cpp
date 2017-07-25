@@ -8,21 +8,21 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>        //https://github.com/tzapu/WiFiManager
 #include <Ticker.h>
-
-// const char* ssid     = "papaya";
-// const char* password = "papaya2014";
-// int status = WL_IDLE_STATUS;
+#include <NewPing.h>
 
 //sensor temperatura
 #define SDA D1
 #define SCL D2
 
 //sensor distancia
-#define vccPin D5 // Pino q alimenta o sensor
-#define trigPin D6 // Trigger Pin
-#define echoPin D7 // Echo Pin
+#define vccPin       D5 // Pino q alimenta o sensor
+#define TRIGGER_PIN  D6  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN     D7  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE 500 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
-long duration, distance; // Duration used to calculate distance
+long duration; // Duration used to calculate distance
+String distance;
 
 WiFiClient  client;
 
@@ -30,7 +30,6 @@ WiFiClient  client;
 void sendToEmonCMS(String nodeId, String data1, String data2);
 const char* emoncmsKey = "673d68c21abb07c581469836abc8aa97";
 const char* host = "emoncms.org";
-
 
 //for LED status
 Ticker ticker;
@@ -72,10 +71,9 @@ void setup()
     lm92.ResultInCelsius = true;  //change to Celsius mode
 
     pinMode(vccPin, OUTPUT);
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
-    //ThingSpeak.begin(client);
+    digitalWrite(vccPin, HIGH);    //liga a alimentação
 
+    //ThingSpeak.begin(client);
 }
 
 void loop()
@@ -85,25 +83,13 @@ void loop()
     String s_temp = String(temperatura,1);
     Serial.println(temperatura);
 
+    double_t echoTime = sonar.ping_median(10);  //media de 10 medicoes
+    distance = sonar.convert_cm(echoTime);
+    Serial.print("Ping: ");
+    Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
+    Serial.println("cm");
 
-    //distancia
-    digitalWrite(vccPin, HIGH);    //liga a alimentação
-    delay(300);  //dar tempo ao sensor estabilizar
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-    duration = pulseIn(echoPin, HIGH);
-    //Calculate the distance (in cm) based on the speed of sound.
-    distance = duration/58.2;
-    String s_distance = String(distance);
-    digitalWrite(vccPin, LOW);
-    Serial.println(distance);
-    //Delay 50ms before next reading.
-    delay(50);
-
-    sendToEmonCMS("0", s_temp, s_distance);
+    sendToEmonCMS("0", s_temp, distance);
 
     //ThingSpeak.writeField(myChannelNumber, 1, temperatura, myWriteAPIKey);
     delay(3000);
