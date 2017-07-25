@@ -6,4 +6,5 @@
   3. Medir tensão da placa solar
   4. Medir corrente da placa solar
   5. Definir o ip
+  6. Retirar resistores de pullup do sensor de temperatura (software)
   
